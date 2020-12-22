@@ -152,17 +152,17 @@ class GameDecompostion:
 #     return A, 2, [2, 2]
 
 
-# def input_game():
-#     A = np.array([
-#         [[0, 2, 1],
-#          [1, 0, 2],
-#          [2, 1, 0]],
-#         [[0, 1, 2],
-#          [2, 0, 1],
-#          [1, 2, 0]]
-#     ])
+def input_game():
+    A = np.array([
+        [[0, 2, 1],
+         [1, 0, 2],
+         [2, 1, 0]],
+        [[0, 1, 2],
+         [2, 0, 1],
+         [1, 2, 0]]
+    ])
 
-#     return A, 2, [2, 2]
+    return A, 2, [2, 2]
 
 # def input_game():
 #     A = np.array([
@@ -174,10 +174,6 @@ class GameDecompostion:
 
 #     return A, 2, [2, 2]
 
-
-def input_game(n_action=[3, 4], mode='random'):
-    A = np.random.randn(2, n_action[0], n_action[1])
-    return A, 2, n_action
 
 # def input_1(theta=0.1):
 #     A = np.array([
@@ -254,6 +250,8 @@ def input_game(n_action=[3, 4], mode='random'):
 
 #     return A, 2, [3, 3]
 
+
+
 def denoise(P):
     for i in range(P.shape[0]):
         for j in range(P.shape[1]):
@@ -271,56 +269,105 @@ def denoise(P):
     # for j in range()
     # A[0, -1, j]
     # A[1, :, :] = -A[0, :, :]
-    
+
+
+def input_game(n_action, theta=5, mode='ZS+II'):
+    if mode == 'ZS+II':
+        C = np.random.rand(2, n_action[0], n_action[1])
+        C[1, :, :] = C[0, :, :]
+
+        B = np.random.rand(2, n_action[0], n_action[1])
+        B[1, :, :] = -B[0, :, :]
+
+        A = B + C
+
+        # elif mode == 'NI+NH':
+        #     C = np.random.rand(2, n_action[0], n_action[1])
+        #     C[1, :, :] = C[0, :, :]
+
+        #     B = np.random.rand(2, n_action[0], n_action[1])
+        #     B[1, :, :] = -B[0, :, :]
+    elif mode == 'HA+II':
+        payoff = np.random.rand(2, n_action[0], n_action[1])
+        ldpayoff = payoff2ld(payoff)
+        gd = GameDecompostion(
+            n_agent=2, n_action=n_action, payoff=ldpayoff)
+        potential, harmonic, nonstra = gd.main()
+
+        C = np.random.rand(2, n_action[0], n_action[1])
+        C[1, :, :] = C[0, :, :]
+
+        A = harmonic + C
+
+    elif mode == 'ZS':
+        A = np.random.rand(2, n_action[0], n_action[1])
+        A[1, :, :] = -A[0, :, :]
+
+    elif mode == 'II':
+        A = np.random.rand(2, n_action[0], n_action[1])
+        A[1, :, :] = A[0, :, :]
+        # A = utility_normalize(A)
+
+    elif mode == 'HA':
+        payoff = np.random.rand(2, n_action[0], n_action[1])
+        ldpayoff = payoff2ld(payoff)
+        gd = GameDecompostion(
+            n_agent=2, n_action=n_action, payoff=ldpayoff)
+        potential, harmonic, nonstra = gd.main()
+
+        A = harmonic
+
+    elif mode == 'random':
+        A = np.random.rand(2, n_action[0], n_action[1])
+
+    else:
+        A = np.array([
+            [[0, 2, 1],
+            [1, 0, 2],
+            [2, 1, 0]],
+            [[0, 1, 2],
+            [2, 0, 1],
+            [1, 2, 0]]
+        ])
+
+        return A, 2, [3, 3]
+            # A = np.array([
+            # [[0, 1, theta],
+            #  [theta, 0, 1],
+            #  [1, theta, 0]],
+            # [[0, theta, 1],
+            #  [1, 0, theta],
+            #  [theta, 1, 0]]
+            # ], dtype=float)
+            # return A, 2, [3, 3]
+    # 4,4 -1,1 1,-1
+    # 1,-1 2,2 -2,0
+    # -1,1 0,-2 2,2
+            # A = np.array([
+            #     [[4, -1, 1],
+            #  [1, 2, -2],
+            #  [-1, 0, 2]],
+            #     [[4, 1, -1],
+            #  [-1, 2, 0],
+            #  [1, -2, 2]]
+            # ], dtype=float)
+            # return A, 2, [3, 3]
+
+    return A, 2, n_action
 
 if __name__ == '__main__':
-    # n_agent = 2
-    # n_action = [2, 2]
-    # payoff = {}
-    # A = {}
-    # A[(0, 0)] = 3
-    # A[(0, 1)] = 0
-    # A[(1, 0)] = 0
-    # A[(1, 1)] = 2
-
-    # B = {}
-    # B[(0, 0)] = 2
-    # B[(0, 1)] = 0
-    # B[(1, 0)] = 0
-    # B[(1, 1)] = 3
-
-    # x, y, z = 1, 2, 3
-    # n_agent = 2
-    # n_action = [3, 3]
-    # payoff = {}
-    # A = {}
-    # A[(0, 0)] = 0
-    # A[(0, 1)] = -3 * x
-    # A[(0, 2)] = 3 * y
-
-    # A[(1, 0)] = 3 * x
-    # A[(1, 1)] = 0
-    # A[(1, 2)] = -3 * z
-
-    # A[(2, 0)] = -3 * y
-    # A[(2, 1)] = 3 * z
-    # A[(2, 2)] = 0
-
-    # B = {}
-    # for key in A.keys():
-    #     B[key] = 0 - A[key]
-
-    # payoff = [A, B]
-
-    payoff, n_agent, n_action = input_game(n_action=[3, 3])
+    payoff, n_agent, n_action = input_game(n_action=[3, 3], mode='ZS')
     # payoff, n_agent, n_action = input_game(e=1e-9)
     print('n_action', n_action, payoff.shape)
     ldpayoff = payoff2ld(payoff)
     gd = GameDecompostion(n_agent=n_agent, n_action=n_action, payoff=ldpayoff)
     potential, harmonic, nonstra = gd.main()
-    print('potential\n', denoise(potential))
+    print('potential\n', denoise(potential), np.sum(
+        potential[0, :, :], axis=0), np.sum(potential[1, :, :], axis=1))
+
     print('harmonic\n', denoise(harmonic))
-    print('nonstra', denoise(nonstra))
+    print('nonstra\n', denoise(nonstra))
+    print('P + S\n', potential + nonstra)
     
     exit()
 

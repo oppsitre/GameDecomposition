@@ -17,11 +17,32 @@ def utility_normalize(payoff):
 
     return payoff
 
+def normalized_game(payoff):
+    n_action = [0, 0]
+    n_action = [payoff.shape[1], payoff.shape[2]]
+    # Row Player
+    for i in range(n_action[1]):
+        payoff[0, :, i] -= np.sum(payoff[0, :, i])
+    
+    # Column Player
+    for i in range(n_action[0]):
+        payoff[1, i, :] -= np.sum(payoff[1, i, :])
+
+    return payoff
+
 def ToGTOutput(payoff, n_agent, n_action, fname):
     with open('../data/' + fname, 'w') as f:
         print(n_agent, file=f)
         print(' '.join([str(x) for x in n_action]) + '\n', file=f)
-    
+
+
+def denoise(P):
+    for i in range(P.shape[0]):
+        for j in range(P.shape[1]):
+            for k in range(P.shape[2]):
+                if abs(P[i, j, k]) < 1e-10:
+                    P[i, j, k] = 0
+    return P
 # def EPRS(x=1, y=2, z=3):
 #     '''
 #     Two-player Game
@@ -299,3 +320,50 @@ if __name__ == '__main__':
     # print(payoff)
     # print(n_player)
     # print(n_action)
+
+
+def calc_eps(A, p, q):
+    import copy
+    A = copy.deepcopy(A)
+    A = utility_normalize(A)
+    minV_1 = 1e5
+    maxV_1 = -1e5
+    minV_2 = 1e5
+    maxV_2 = -1e5
+
+    n_action = A[0, :, :].shape
+
+    # p = softmax(theta)
+    # q = softmax(phi)
+    # print('A', A.shape, 'p', p.shape, 'q', q.shape)
+    p = p.reshape(1, -1)
+    q = q.reshape(1, -1)
+
+    v1 = p @ A[0, :, :] @ q.T
+    v2 = p @ A[1, :, :] @ q.T
+
+    # print('v1', v1, 'v2', v2)
+
+    eps_1 = 0.0
+    for i in range(n_action[0]):
+        one = np.zeros((1, n_action[0]))
+        # print('one', one.shape, 'n_action', n_action)
+        one[0, i] = 1.0
+        tmp = one @ A[0, :, :] @ q.T
+        
+        # print('tmp', tmp)
+        eps_1 = max(tmp - v1, eps_1)
+        minV_1 = min(minV_1, one @ A[0, :, :] @ q.T)
+        maxV_1 = max(maxV_1, one @ A[0, :, :] @ q.T)
+
+    eps_2 = 0.0
+    for i in range(n_action[1]):
+        one = np.zeros((n_action[1], 1))
+        one[i, 0] = 1.0
+        tmp = p @ A[1, :, :] @ one
+
+        eps_2 = max(tmp - v2, eps_2)
+        minV_2 = min(minV_2, p @ A[1, :, :] @ one)
+        maxV_2 = max(maxV_2, p @ A[1, :, :] @ one)
+
+    return max(eps_1, eps_2), minV_1, maxV_1, minV_2, maxV_2, eps_1[0, 0], eps_2[0, 0]

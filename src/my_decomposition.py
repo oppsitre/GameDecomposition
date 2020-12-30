@@ -331,6 +331,16 @@ def input_game(n_action, theta=5, mode='ZS+II'):
         ])
 
         return A, 2, [3, 3]
+        # A = np.array(
+        #     [
+        #         [[3, -3, 0],
+        #          [-3, 3, 0]],
+        #         [[-2, 2, 0],
+        #          [2, -2, 0]]
+        #     ]
+        # )
+        # return A, 2, [2, 3]
+
             # A = np.array([
             # [[0, 1, theta],
             #  [theta, 0, 1],
@@ -356,7 +366,7 @@ def input_game(n_action, theta=5, mode='ZS+II'):
     return A, 2, n_action
 
 if __name__ == '__main__':
-    payoff, n_agent, n_action = input_game(n_action=[3, 3], mode='ZS')
+    payoff, n_agent, n_action = input_game(n_action=[3, 3], mode='other')
     # payoff, n_agent, n_action = input_game(e=1e-9)
     print('n_action', n_action, payoff.shape)
     ldpayoff = payoff2ld(payoff)
@@ -367,6 +377,10 @@ if __name__ == '__main__':
 
     print('harmonic\n', denoise(harmonic))
     print('nonstra\n', denoise(nonstra))
+
+    ans = np.dot(potential, harmonic)
+
+    print('P * H', np.sum(ans))
     print('P + S\n', potential + nonstra)
     
     exit()
